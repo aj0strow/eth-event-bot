@@ -1,0 +1,14 @@
+[sqlite]
+connection = "file::memory:?mode=memory"
+
+[infura]
+network = "rinkeby"
+apikey = "insert_api_key"
+
+[[contract]]
+truffleJson = "./contracts/Contract1.json"
+address = "0xa7a4f43c7c174a5a758fce548582413040Ab4134"
+
+[[contract]]
+truffleJson = "./contracts/Contract2.json"
+address = "0x631b6C1A40AB37DA459e823C27aFb73b7f984e0e"

@@ -1,0 +1,4 @@
+*.db
+/contracts
+.DS_Store
+*.log
