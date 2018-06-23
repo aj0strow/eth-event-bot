@@ -40,6 +40,8 @@ func (t *Telegram) TXT(event sqlEvent) string {
 	buf.WriteString(event.Network)
 	buf.WriteString("]")
 	buf.WriteString(" ")
+	buf.WriteString(event.ContractName)
+	buf.WriteString(" ")
 	buf.WriteString(event.EventName)
 	buf.WriteString("(")
 	for i := range event.Arguments {
