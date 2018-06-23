@@ -26,6 +26,13 @@ CREATE TABLE IF NOT EXISTS events (
   arg7 text,
   arg8 text,
   arg9 text
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  network text NOT NULL,
+  transaction_hash text NOT NULL,
+  log_index int NOT NULL,
+  platform text NOT NULL
 );`)
 	return err
 }
@@ -56,7 +63,11 @@ type sqlEvent struct {
 }
 
 func queryEventExists(db *sql.DB, event sqlEvent) (bool, error) {
-	row := db.QueryRow(`SELECT 1 FROM events WHERE network = ? AND transaction_hash = ? AND log_index = ?`, event.Network, event.TransactionHash, event.LogIndex)
+	row := db.QueryRow(`
+		SELECT 1
+		FROM events
+		WHERE network = ? AND transaction_hash = ? AND log_index = ?`,
+		event.Network, event.TransactionHash, event.LogIndex)
 	var exists int
 	err := row.Scan(&exists)
 	if err == sql.ErrNoRows {
@@ -121,4 +132,35 @@ func unpackArgs(flatArgs [10]sql.NullString) []string {
 		}
 	}
 	return args
+}
+
+type sqlNotification struct {
+	Network         string
+	TransactionHash string
+	LogIndex        int64
+	Platform        string
+}
+
+func queryNotificationExists(db *sql.DB, notification sqlNotification) (bool, error) {
+	row := db.QueryRow(`
+		SELECT 1
+		FROM notifications
+		WHERE network = ? AND transaction_hash = ? AND log_index = ? AND platform = ?`,
+		notification.Network, notification.TransactionHash, notification.LogIndex, notification.Platform)
+	var exists int
+	err := row.Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func insertNotification(db *sql.DB, notification sqlNotification) error {
+	_, err := db.Exec(`
+		INSERT INTO notifications (network, transaction_hash, log_index, platform)
+		VALUES (?, ?, ?, ?)`,
+		notification.Network, notification.TransactionHash, notification.LogIndex, notification.Platform)
+	return err
 }

@@ -35,6 +35,18 @@ Further notes:
 
 * See [sqlite browser app](https://sqlitebrowser.org/) for a way to easily view data in a sqlite database table. 
 
+## Telegram
+
+The Telegram integration sends all events in text format to the Telegram channel in silent mode. If you want to send all messages to a channel, create a new bot and get your token. 
+
+```toml
+[telegram]
+token = "555555555:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+chatId = "@channelusername"
+```
+
+In your channel, add the bot as administrator with the ability to post messages. It will never post duplicates so you can be sure new messages in the channel mean new events in your smart contract. 
+
 ## License
 
 Ethereum Event Bot is free as in libre software. See the `LICENSE.txt` file. 

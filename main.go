@@ -14,7 +14,7 @@ import (
 	"os"
 )
 
-const version = "0.0.1"
+const version = "0.0.2"
 
 var (
 	wantVersion bool
@@ -37,8 +37,8 @@ func main() {
 	}
 
 	// Read configuration file.
-	var config botConfig
-	_, err := toml.DecodeFile(configFile, &config)
+	config := &BotOptions{}
+	_, err := toml.DecodeFile(configFile, config)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "config: %s\n", err.Error())
 		os.Exit(1)
@@ -83,6 +83,15 @@ func main() {
 		panic(err)
 	}
 
+	// Set up integrations.
+	var integrations []Integration
+	if config.Telegram != nil {
+		integrations = append(integrations, &Telegram{
+			Token:  config.Telegram.Token,
+			ChatID: config.Telegram.ChatID,
+		})
+	}
+
 	// Get logs for each contract.
 	for _, contract := range contracts {
 		query := ethereum.FilterQuery{
@@ -124,6 +133,30 @@ func main() {
 			err = insertEvent(db, row)
 			if err != nil {
 				panic(err)
+			}
+			for _, integration := range integrations {
+				notification := sqlNotification{
+					Network:         row.Network,
+					TransactionHash: row.TransactionHash,
+					LogIndex:        row.LogIndex,
+					Platform:        integration.Platform(),
+				}
+				exists, err := queryNotificationExists(db, notification)
+				if err != nil {
+					panic(err)
+				}
+				if exists {
+					continue
+				}
+				err = integration.Send(row)
+				if err != nil {
+					fmt.Printf("%s: %s\n", integration.Platform(), err.Error())
+					continue
+				}
+				err = insertNotification(db, notification)
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}

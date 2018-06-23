@@ -1,25 +1,31 @@
 package main
 
-type botConfig struct {
-	Sqlite   sqliteConfig
-	Infura   infuraConfig
-	Contract []contractConfig
+type BotOptions struct {
+	Sqlite   *SqliteOptions
+	Infura   *InfuraOptions
+	Contract []*ContractOptions
+	Telegram *TelegramOptions
 }
 
-type sqliteConfig struct {
+type SqliteOptions struct {
 	Connection string
 }
 
-type infuraConfig struct {
+type InfuraOptions struct {
 	APIKey  string
 	Network string
 }
 
-func (infura *infuraConfig) Endpoint() string {
+func (infura *InfuraOptions) Endpoint() string {
 	return "https://" + infura.Network + ".infura.io/" + infura.APIKey
 }
 
-type contractConfig struct {
+type ContractOptions struct {
 	TruffleJSON string
 	Address     string
+}
+
+type TelegramOptions struct {
+	Token  string
+	ChatID string
 }
